@@ -2,7 +2,6 @@ use ntex::web;
 use ntex_files::NamedFile;
 use serde::Deserialize;
 use std::path::PathBuf;
-use ntex_files as fs;
 
 mod file;
 
