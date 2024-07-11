@@ -1,9 +1,9 @@
+use dashmap::DashMap;
+use lazy_static::lazy_static;
 use ntex::web;
 use std::env;
 use std::io::Result;
 use std::sync::Arc;
-use dashmap::DashMap;
-use lazy_static::lazy_static;
 
 mod services;
 #[ntex::main]
@@ -25,15 +25,15 @@ async fn main() -> Result<()> {
             bind_port = args[i + 1].parse().unwrap_or(8080);
             let bind_port_is_present = true;
             i += 1;
-        } else if i + 1 < args.len(){
-                if let Some((host, port)) = parse_host_port(&args[i]){
-                    if !bind_ip_is_present && !bind_port_is_present {
-                        bind_ip = host.to_string();
-                        bind_port = port
-                    }
-                } else {
-                    println!("-ipaddr & -port arg have higher priority than a full host name. host name will NOT be used.")
+        } else if i + 1 < args.len() {
+            if let Some((host, port)) = parse_host_port(&args[i]) {
+                if !bind_ip_is_present && !bind_port_is_present {
+                    bind_ip = host.to_string();
+                    bind_port = port
                 }
+            } else {
+                println!("-ipaddr & -port arg have higher priority than a full host name. host name will NOT be used.")
+            }
         }
         i += 1;
     }
@@ -42,13 +42,13 @@ async fn main() -> Result<()> {
     web::HttpServer::new(|| {
         web::App::new()
             .route("/", web::get().to(services::index::index))
-            .route("/insert", web::post().to(services::newput::index))
+            .route("/insert", web::post().to(services::insert::index))
             .route("/query/{key}", web::get().to(services::query::index))
     })
-        .bind((bind_ip.as_str(), bind_port))?
-        .workers(4)
-        .run()
-        .await
+    .bind((bind_ip.as_str(), bind_port))?
+    .workers(4)
+    .run()
+    .await
 }
 fn parse_host_port(host_port: &str) -> Option<(&str, u16)> {
     if let Some(idx) = host_port.rfind(':') {

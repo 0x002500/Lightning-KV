@@ -1,3 +1,3 @@
 pub mod index;
-pub mod newput;
+pub mod insert;
 pub mod query;
