@@ -1,18 +1,40 @@
-use std::mem::size_of_val;
-use ntex::web;
 use crate::GLOBAL_MAP;
+use ntex::web;
+use std::mem::size_of_val;
 
 pub async fn index(_path: web::types::Path<()>) -> Result<String, web::Error> {
-    let map = GLOBAL_MAP.read().unwrap();
-    let size = map.len();
-    let capacity = map.capacity();
+    let map: std::sync::RwLockReadGuard<dashmap::DashMap<String, String>> =
+        GLOBAL_MAP.read().unwrap();
+    let size: usize = map.len();
+    let capacity: usize = map.capacity();
 
-    let keys_size: usize = map.keys().map(|k| size_of_val(k) + k.capacity()).sum();
-    let values_size: usize = map.values().map(|v| size_of_val(v) + v.capacity()).sum();
-    let hashmap_overhead = size_of_val(&*map);
+    let keys_size: usize = map
+        .iter()
+        .map(
+            |pair: dashmap::mapref::multiple::RefMulti<String, String>| {
+                let (key, _value) = pair.pair();
+                size_of_val(key) + key.capacity()
+            },
+        )
+        .sum();
 
-    let memory_usage = keys_size + values_size + hashmap_overhead;
+    let values_size: usize = map
+        .iter()
+        .map(
+            |pair: dashmap::mapref::multiple::RefMulti<String, String>| {
+                let (_key, value) = pair.pair();
+                size_of_val(value) + value.capacity()
+            },
+        )
+        .sum();
 
-    let result = format!("MAP size: {}, MAP capacity: {}, Memory Usage: {} (bytes)", size, capacity, memory_usage);
+    let hashmap_overhead: usize = size_of_val(&*map);
+
+    let memory_usage: usize = keys_size + values_size + hashmap_overhead;
+
+    let result: String = format!(
+        "MAP size: {}, MAP capacity: {}, Memory Usage: {} (bytes)",
+        size, capacity, memory_usage
+    );
     Ok(result)
 }

@@ -3,7 +3,8 @@ use ntex::web;
 //use std::time::{Instant, Duration};
 
 pub async fn index(path: web::types::Path<String>) -> Result<String, web::Error> {
-    let map = GLOBAL_MAP.read().unwrap();
+    let map: std::sync::RwLockReadGuard<dashmap::DashMap<String, String>> =
+        GLOBAL_MAP.read().unwrap();
     //let start = Instant::now();
     let key: &String = &path.into_inner();
     if let Some(value) = map.get(key) {
