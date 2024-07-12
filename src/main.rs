@@ -1,9 +1,10 @@
+use std::collections::HashMap;
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use ntex::web;
 use std::env;
 use std::io::Result;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 mod services;
 #[ntex::main]
@@ -44,6 +45,7 @@ async fn main() -> Result<()> {
             .route("/", web::get().to(services::index::index))
             .route("/insert", web::post().to(services::insert::index))
             .route("/query/{key}", web::get().to(services::query::index))
+            .route("/status", web::get().to(services::status::index))
     })
     .bind((bind_ip.as_str(), bind_port))?
     .workers(4)
@@ -59,6 +61,6 @@ fn parse_host_port(host_port: &str) -> Option<(&str, u16)> {
     }
     None
 }
-lazy_static! {
-    pub static ref GLOBAL_MAP: Arc<DashMap<String, String>> = Arc::new(DashMap::new());
+lazy_static::lazy_static! {
+    pub static ref GLOBAL_MAP: RwLock<HashMap<String, String>> = RwLock::new(HashMap::new());
 }
