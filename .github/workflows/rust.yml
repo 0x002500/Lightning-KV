@@ -3,8 +3,6 @@ name: Rust Build
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -87,7 +85,7 @@ jobs:
 
       # Upload the release artifact
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "${{ matrix.target }}-${{ runner.os }}-artifact"
           path: release/
