@@ -44,39 +44,43 @@ jobs:
       - name: Build Executable
         run: cargo build --release --target ${{ matrix.target }}
 
-      # Rename and move binary on Unix-based systems
+      # Rename and move binary for Unix-like systems (macOS & Ubuntu)
       - name: Rename and Move Binary (Unix)
         if: runner.os != 'Windows'
         id: rename_unix
         run: |
           mkdir -p release
-          BIN_NAME="lightning-kv"  # Replace with your binary name
+          BIN_NAME="lightning-kv"
           NEW_NAME="${BIN_NAME}-${{ matrix.target }}"
           mv target/${{ matrix.target }}/release/${BIN_NAME} release/${NEW_NAME}
           echo "binary_name=${NEW_NAME}" >> $GITHUB_OUTPUT
         shell: bash
 
-      # Rename and move binary on Windows
+      # Rename and move binary for Windows
       - name: Rename and Move Binary (Windows)
         if: runner.os == 'Windows'
         id: rename_windows
         run: |
           mkdir release
-          $binaryName = "lightning-kv-${{ matrix.target }}.exe"  # Replace with your binary name
+          $binaryName = "lightning-kv-${{ matrix.target }}.exe"
           Move-Item "target\\${{ matrix.target }}\\release\\lightning-kv.exe" "release\\$binaryName"
           echo "binary_name=$binaryName" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
-      # Generate MD5 checksum on Unix-based systems
+      # Generate MD5 checksum for Unix-like systems; use md5 if md5sum is unavailable (e.g. macOS)
       - name: Generate MD5 Checksum (Unix)
         if: runner.os != 'Windows'
         run: |
           cd release
           BIN_FILE="${{ steps.rename_unix.outputs.binary_name }}"
-          md5sum "$BIN_FILE" > "${BIN_FILE}.md5"
+          if command -v md5sum >/dev/null 2>&1; then
+            md5sum "$BIN_FILE" > "${BIN_FILE}.md5"
+          else
+            md5 -q "$BIN_FILE" > "${BIN_FILE}.md5"
+          fi
         shell: bash
 
-      # Generate MD5 checksum on Windows
+      # Generate MD5 checksum for Windows
       - name: Generate MD5 Checksum (Windows)
         if: runner.os == 'Windows'
         run: |
