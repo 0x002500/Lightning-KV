@@ -34,18 +34,16 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Archive binary
+        uses: actions/upload-artifact@v4
         run: |
           mkdir -p release
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            mv target/${{ matrix.target }}/release/lightning-kv.exe release/lightning-kv-${{ matrix.target }}.exe
+            with:
+              name: ${{ matrix.target }}
+              path: target/${{ matrix.target }}/release/lightning-kv.exe
           else
-            mv target/${{ matrix.target }}/release/lightning-kv release/lightning-kv-${{ matrix.target }}
+            with:
+              name: ${{ matrix.target }}
+              path: target/${{ matrix.target }}/release/lightning-kv
           fi
         shell: bash
-
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
