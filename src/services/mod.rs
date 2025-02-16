@@ -1,2 +1,4 @@
 pub mod create;
-pub mod query;
+pub mod read;
+pub mod update;
+pub mod delete;
