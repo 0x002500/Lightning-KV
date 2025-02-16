@@ -38,10 +38,13 @@ jobs:
           targets: ${{ matrix.target }}
           override: true
 
+      - name: Add Rust Target
+        run: rustup target add ${{ matrix.target }}
+
       - name: Build Executable
         run: cargo build --release --target ${{ matrix.target }}
 
-      # Rename binary for Unix-based systems (Linux and macOS)
+      # Rename and move binary on Unix-based systems
       - name: Rename and Move Binary (Unix)
         if: runner.os != 'Windows'
         id: rename_unix
@@ -53,7 +56,7 @@ jobs:
           echo "binary_name=${NEW_NAME}" >> $GITHUB_OUTPUT
         shell: bash
 
-      # Rename binary for Windows systems
+      # Rename and move binary on Windows
       - name: Rename and Move Binary (Windows)
         if: runner.os == 'Windows'
         id: rename_windows
@@ -64,7 +67,7 @@ jobs:
           echo "binary_name=$binaryName" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
-      # Generate MD5 checksum for Unix-based systems
+      # Generate MD5 checksum on Unix-based systems
       - name: Generate MD5 Checksum (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -73,7 +76,7 @@ jobs:
           md5sum "$BIN_FILE" > "${BIN_FILE}.md5"
         shell: bash
 
-      # Generate MD5 checksum for Windows
+      # Generate MD5 checksum on Windows
       - name: Generate MD5 Checksum (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -83,7 +86,7 @@ jobs:
           $hash.Hash | Out-File -Encoding ascii -FilePath "$binaryPath.md5"
         shell: pwsh
 
-      # Upload the release artifact
+      # Upload the build artifacts using upload-artifact@v4
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
