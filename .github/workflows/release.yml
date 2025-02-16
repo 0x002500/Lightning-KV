@@ -1,4 +1,4 @@
-name: Build and Upload Rust Binary Artifacts
+name: Build Release Binary Artifacts
 
 on:
   push:
