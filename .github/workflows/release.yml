@@ -1,0 +1,51 @@
+name: Release Rust Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use Ubuntu as the base runner
+
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-msvc
+          - aarch64-pc-windows-msvc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+          override: true
+
+      - name: Build binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Archive binary
+        run: |
+          mkdir -p release
+          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+            mv target/${{ matrix.target }}/release/lightning-kv.exe release/lightning-kv-${{ matrix.target }}.exe
+          else
+            mv target/${{ matrix.target }}/release/lightning-kv release/lightning-kv-${{ matrix.target }}
+          fi
+        shell: bash
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
