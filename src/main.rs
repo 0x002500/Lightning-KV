@@ -5,6 +5,7 @@ use services::update::update_interface;
 use services::delete::delete_interface;
 
 mod services;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
