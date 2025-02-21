@@ -9,6 +9,6 @@ pub struct CreateData {
 }
 
 pub async fn create_interface(data: web::Json<CreateData>) -> impl Responder {
-    let _ = write_data(data.key.clone(), data.value.clone());
+    let _ = write_data(data.key.clone(), data.value.clone()).await;
     HttpResponse::Ok().body("Write Success!")
 }

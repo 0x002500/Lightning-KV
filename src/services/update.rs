@@ -9,6 +9,6 @@ pub struct UpdateData {
 }
 
 pub async fn update_interface(data: web::Json<UpdateData>) -> impl Responder {
-    let _ = write_data(data.key.clone(), data.value.clone());
+    let _ = write_data(data.key.clone(), data.value.clone()).await;
     HttpResponse::Ok().body("Write Success!")
 }
